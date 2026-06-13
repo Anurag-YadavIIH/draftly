@@ -1,0 +1,73 @@
+# =========================================================================
+# Draftly - docker compose (REAL MODE by default)
+#
+# This brings up PostgreSQL + the app wired for real Gmail (OAuth2) and a real
+# LLM provider (OpenAI by default). Before running, create your .env file:
+#
+#     cp .env.example .env      # then fill in OPENAI_API_KEY + Google creds
+#     docker compose up --build
+#
+# Open http://localhost:8080/swagger-ui.html
+# Connect Gmail once via GET /api/auth/gmail/login (follow the returned URL).
+#
+# -------------------------------------------------------------------------
+# NO ACCOUNTS? Fall back to mock mode (H2 in-memory, fake inbox, mock LLM) by
+# adding this line to your .env, then `docker compose up`:
+#
+#     SPRING_PROFILES_ACTIVE=mock
+#
+# (In mock mode the db service still starts but is unused.)
+# =========================================================================
+services:
+  app:
+    build: .
+    container_name: draftly-app
+    ports:
+      - "8080:8080"
+    environment:
+      # ---- Mode selection (real by default) ----
+      DRAFTLY_GMAIL_MODE: ${DRAFTLY_GMAIL_MODE:-real}
+      DRAFTLY_LLM_PROVIDER: ${DRAFTLY_LLM_PROVIDER:-openai}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
+
+      # ---- LLM providers ----
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+
+      # ---- Gmail OAuth2 ----
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:8080/api/auth/gmail/callback}
+
+      # ---- Token encryption (override in production!) ----
+      DRAFTLY_ENCRYPTION_KEY: ${DRAFTLY_ENCRYPTION_KEY:-hEOJ0M+xSp8dJydJwP5o5BH+bWJ+BAAXePOvdn1nlxA=}
+
+      # ---- Database (points at the db service below) ----
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/draftly
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-draftly}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-draftly}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    container_name: draftly-db
+    environment:
+      POSTGRES_DB: draftly
+      POSTGRES_USER: ${POSTGRES_USER:-draftly}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-draftly}
+    ports:
+      - "5433:5432"
+    volumes:
+      - draftly-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-draftly}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  draftly-pgdata:

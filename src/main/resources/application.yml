@@ -1,0 +1,94 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: draftly
+  # -------------------------------------------------------------------------
+  # DEFAULT = REAL MODE. Uses PostgreSQL (provided by docker-compose) and the
+  # real Gmail API + a real LLM provider. Connection details come from env vars
+  # with localhost defaults so it also works if you run Postgres yourself.
+  #
+  # No accounts? Run in MOCK mode instead (in-memory H2, fake inbox, mock LLM):
+  #     ./mvnw spring-boot:run -Dspring-boot.run.profiles=mock
+  #     docker compose: set SPRING_PROFILES_ACTIVE=mock in your .env
+  # -------------------------------------------------------------------------
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/draftly}
+    driver-class-name: org.postgresql.Driver
+    username: ${SPRING_DATASOURCE_USERNAME:draftly}
+    password: ${SPRING_DATASOURCE_PASSWORD:draftly}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  h2:
+    console:
+      enabled: false
+
+# -------------------------------------------------------------------------
+# Draftly application settings (bound to AppProperties).
+# Defaults are REAL: real Gmail + OpenAI. Fill in credentials via .env.
+# Override any single value with its environment variable.
+# -------------------------------------------------------------------------
+draftly:
+  gmail-mode: ${DRAFTLY_GMAIL_MODE:real}          # real | mock
+  llm-provider: ${DRAFTLY_LLM_PROVIDER:openai}    # openai | anthropic | mock
+  rag-top-k: 3
+  max-send-retries: 3
+  # AES key (Base64, 16/24/32 bytes) for encrypting OAuth tokens at rest.
+  # A demo key is provided; OVERRIDE in production via DRAFTLY_ENCRYPTION_KEY.
+  encryption-key: ${DRAFTLY_ENCRYPTION_KEY:ZHJhZnRseS1kZW1vLWtleS0xMjM0NTY3OA==}
+  openai:
+    api-key: ${OPENAI_API_KEY:}
+    model: ${OPENAI_MODEL:gpt-4o-mini}
+    base-url: https://api.openai.com/v1/chat/completions
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY:}
+    model: ${ANTHROPIC_MODEL:claude-sonnet-4-6}
+    base-url: https://api.anthropic.com/v1/messages
+  gmail:
+    client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/api/auth/gmail/callback}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+logging:
+  level:
+    root: INFO
+    com.airtribe.draftly: INFO
+    org.hibernate.SQL: WARN
+
+---
+# =========================================================================
+# MOCK PROFILE  ->  the zero-setup fallback. No Google account, no API key,
+# in-memory H2 database. Activate with:  --spring.profiles.active=mock
+# =========================================================================
+spring:
+  config:
+    activate:
+      on-profile: mock
+  datasource:
+    url: jdbc:h2:mem:draftly;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  h2:
+    console:
+      enabled: true       # browse data at http://localhost:8080/h2-console
+      path: /h2-console
+
+draftly:
+  gmail-mode: mock
+  llm-provider: mock
