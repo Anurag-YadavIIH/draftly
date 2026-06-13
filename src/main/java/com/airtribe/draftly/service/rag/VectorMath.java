@@ -46,4 +46,11 @@ public final class VectorMath {
         }
         return vec;
     }
+
+    /** @return the pgvector text input format, e.g. {@code "[0.12,0.04,-0.91]"}. */
+    public static String toPgVectorLiteral(double[] vec) {
+        return Arrays.stream(vec)
+                .mapToObj(Double::toString)
+                .collect(Collectors.joining(",", "[", "]"));
+    }
 }

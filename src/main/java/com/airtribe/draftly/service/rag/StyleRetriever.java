@@ -4,6 +4,7 @@ import com.airtribe.draftly.config.AppProperties;
 import com.airtribe.draftly.domain.StyleSample;
 import com.airtribe.draftly.repository.StyleSampleRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -31,14 +32,22 @@ public class StyleRetriever {
         this.props = props;
     }
 
+    private static final String PGVECTOR = "pgvector";
+
     /**
      * Store one of the user's sent emails as a style sample, embedding it so it
-     * can be retrieved later.
+     * can be retrieved later. When {@code draftly.vector-store=pgvector}, the
+     * same embedding also backfills {@code embedding_vec} for index-based search.
      */
+    @Transactional
     public StyleSample indexSentEmail(String userEmail, String text) {
         double[] embedding = embeddingClient.embed(text);
         StyleSample sample = new StyleSample(userEmail, text, VectorMath.toCsv(embedding));
-        return sampleRepository.save(sample);
+        StyleSample saved = sampleRepository.save(sample);
+        if (PGVECTOR.equalsIgnoreCase(props.getVectorStore())) {
+            sampleRepository.updateEmbeddingVector(saved.getId(), VectorMath.toPgVectorLiteral(embedding));
+        }
+        return saved;
     }
 
     /**
@@ -47,8 +56,13 @@ public class StyleRetriever {
      */
     public List<String> retrieveSimilar(String userEmail, String query) {
         double[] queryVec = embeddingClient.embed(query);
-        List<StyleSample> samples = sampleRepository.findByUserEmail(userEmail);
 
+        if (PGVECTOR.equalsIgnoreCase(props.getVectorStore())) {
+            return sampleRepository.findSimilarByVector(
+                    userEmail, VectorMath.toPgVectorLiteral(queryVec), props.getRagTopK());
+        }
+
+        List<StyleSample> samples = sampleRepository.findByUserEmail(userEmail);
         return samples.stream()
                 .sorted(Comparator.comparingDouble(
                         (StyleSample s) -> VectorMath.cosineSimilarity(

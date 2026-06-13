@@ -22,6 +22,12 @@ public class AppProperties {
     /** How many past sent emails to retrieve as style context for RAG. */
     private int ragTopK = 3;
 
+    /** Which embedding implementation to use: "hashing" or "openai". */
+    private String embeddingProvider = "hashing";
+
+    /** Where style-sample vectors are searched: "memory" (Java cosine) or "pgvector". */
+    private String vectorStore = "memory";
+
     /** Maximum automatic retry attempts for a failed send. */
     private int maxSendRetries = 3;
 
@@ -33,6 +39,8 @@ public class AppProperties {
         private String apiKey = "";
         private String model = "gpt-4o-mini";
         private String baseUrl = "https://api.openai.com/v1/chat/completions";
+        private String embeddingModel = "text-embedding-3-small";
+        private String embeddingsBaseUrl = "https://api.openai.com/v1/embeddings";
 
         public String getApiKey() { return apiKey; }
         public void setApiKey(String apiKey) { this.apiKey = apiKey; }
@@ -40,6 +48,10 @@ public class AppProperties {
         public void setModel(String model) { this.model = model; }
         public String getBaseUrl() { return baseUrl; }
         public void setBaseUrl(String baseUrl) { this.baseUrl = baseUrl; }
+        public String getEmbeddingModel() { return embeddingModel; }
+        public void setEmbeddingModel(String embeddingModel) { this.embeddingModel = embeddingModel; }
+        public String getEmbeddingsBaseUrl() { return embeddingsBaseUrl; }
+        public void setEmbeddingsBaseUrl(String embeddingsBaseUrl) { this.embeddingsBaseUrl = embeddingsBaseUrl; }
     }
 
     public static class Anthropic {
@@ -76,6 +88,10 @@ public class AppProperties {
     public void setEncryptionKey(String encryptionKey) { this.encryptionKey = encryptionKey; }
     public int getRagTopK() { return ragTopK; }
     public void setRagTopK(int ragTopK) { this.ragTopK = ragTopK; }
+    public String getEmbeddingProvider() { return embeddingProvider; }
+    public void setEmbeddingProvider(String embeddingProvider) { this.embeddingProvider = embeddingProvider; }
+    public String getVectorStore() { return vectorStore; }
+    public void setVectorStore(String vectorStore) { this.vectorStore = vectorStore; }
     public int getMaxSendRetries() { return maxSendRetries; }
     public void setMaxSendRetries(int maxSendRetries) { this.maxSendRetries = maxSendRetries; }
     public Anthropic getAnthropic() { return anthropic; }

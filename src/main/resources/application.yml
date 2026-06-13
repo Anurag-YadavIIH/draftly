@@ -37,6 +37,8 @@ spring:
 draftly:
   gmail-mode: ${DRAFTLY_GMAIL_MODE:real}          # real | mock
   llm-provider: ${DRAFTLY_LLM_PROVIDER:openai}    # openai | anthropic | mock
+  embedding-provider: ${DRAFTLY_EMBEDDING_PROVIDER:openai}  # openai | hashing
+  vector-store: ${DRAFTLY_VECTOR_STORE:pgvector}            # pgvector | memory
   rag-top-k: 3
   max-send-retries: 3
   # AES key (Base64, 16/24/32 bytes) for encrypting OAuth tokens at rest.
@@ -46,6 +48,8 @@ draftly:
     api-key: ${OPENAI_API_KEY:}
     model: ${OPENAI_MODEL:gpt-4o-mini}
     base-url: https://api.openai.com/v1/chat/completions
+    embedding-model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+    embeddings-base-url: https://api.openai.com/v1/embeddings
   anthropic:
     api-key: ${ANTHROPIC_API_KEY:}
     model: ${ANTHROPIC_MODEL:claude-sonnet-4-6}
@@ -92,3 +96,5 @@ spring:
 draftly:
   gmail-mode: mock
   llm-provider: mock
+  embedding-provider: hashing
+  vector-store: memory

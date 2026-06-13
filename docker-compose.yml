@@ -28,6 +28,8 @@ services:
       # ---- Mode selection (real by default) ----
       DRAFTLY_GMAIL_MODE: ${DRAFTLY_GMAIL_MODE:-real}
       DRAFTLY_LLM_PROVIDER: ${DRAFTLY_LLM_PROVIDER:-openai}
+      DRAFTLY_EMBEDDING_PROVIDER: ${DRAFTLY_EMBEDDING_PROVIDER:-openai}
+      DRAFTLY_VECTOR_STORE: ${DRAFTLY_VECTOR_STORE:-pgvector}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
 
       # ---- LLM providers ----
@@ -53,7 +55,9 @@ services:
     restart: unless-stopped
 
   db:
-    image: postgres:16-alpine
+    # pgvector/pgvector ships the `vector` extension on top of stock Postgres,
+    # used for RAG style-sample similarity search (HNSW cosine index).
+    image: pgvector/pgvector:pg16
     container_name: draftly-db
     environment:
       POSTGRES_DB: draftly

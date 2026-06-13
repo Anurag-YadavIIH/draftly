@@ -8,4 +8,7 @@ public interface EmbeddingClient {
 
     /** @return a fixed-length embedding vector for the given text. */
     double[] embed(String text);
+
+    /** @return the fixed dimensionality of vectors returned by {@link #embed}. */
+    int dimensions();
 }

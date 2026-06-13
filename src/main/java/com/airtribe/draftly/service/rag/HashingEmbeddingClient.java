@@ -1,5 +1,6 @@
 package com.airtribe.draftly.service.rag;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
@@ -10,15 +11,20 @@ import java.util.Locale;
  * vector, which is then L2-normalised. It is deterministic and offline, so RAG
  * works in the demo without any embedding API.
  *
- * It is intentionally simple - the point of the capstone is to demonstrate the
- * RAG retrieval pipeline (embed -> store -> cosine-similarity search), which this
- * captures faithfully. For production you would swap in a real embedding model
- * behind the same {@link EmbeddingClient} interface.
+ * It is intentionally simple - this is the MOCK-profile default so RAG works
+ * end-to-end with zero external dependencies. Real deployments use
+ * {@link OpenAiEmbeddingClient} behind the same {@link EmbeddingClient} interface.
  */
 @Component
+@ConditionalOnProperty(name = "draftly.embedding-provider", havingValue = "hashing", matchIfMissing = true)
 public class HashingEmbeddingClient implements EmbeddingClient {
 
     private static final int DIMENSIONS = 256;
+
+    @Override
+    public int dimensions() {
+        return DIMENSIONS;
+    }
 
     @Override
     public double[] embed(String text) {

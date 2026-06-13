@@ -26,7 +26,6 @@ and AI concepts (**RAG** and **MCP-style tools**).
 **Out of scope (intentionally, for a beginner-friendly capstone)**
 - Multi-user accounts / auth UI (the demo uses a single fixed user)
 - A frontend (the API + Swagger UI is the deliverable)
-- Production-grade vector database (a simple in-Java cosine search is used instead)
 
 ## 3. Architecture Overview
 
@@ -61,8 +60,10 @@ system runnable offline for the demo.
 ### 4.1 Generate a draft (RAG + LLM)
 1. `POST /api/drafts` with `emailId` and a `tone`.
 2. `DraftService` loads the email and the user's preferences (signature, default tone).
-3. **RAG retrieval**: `StyleRetriever` embeds the incoming email and finds the
-   top-K most similar *past sent emails* by cosine similarity.
+3. **RAG retrieval**: `StyleRetriever` embeds the incoming email (OpenAI
+   `text-embedding-3-small`, with a deterministic hashing embedder for the mock
+   profile) and finds the top-K most similar *past sent emails* via a pgvector
+   HNSW cosine-distance index (or in-Java cosine search in the mock profile).
 4. Those style samples + tone + signature are packed into a prompt and sent to the
    `LlmClient`, which returns a reply body.
 5. The draft is saved with status `SUGGESTED`.
@@ -93,7 +94,7 @@ system runnable offline for the demo.
 | `draft` | generated replies | `status`, `tone`, `content` |
 | `sent_log` | send history / audit | `idempotency_key` (UNIQUE), `attempts`, `last_error` |
 | `user_preference` | signature & default tone | `user_email` (UNIQUE) |
-| `style_sample` | RAG corpus | `text`, `embedding` (CSV) |
+| `style_sample` | RAG corpus | `text`, `embedding` (CSV), `embedding_vec` (pgvector) |
 | `oauth_token` | Gmail tokens | `access_token_enc`, `refresh_token_enc` (AES-GCM) |
 
 **Draft status lifecycle:** `SUGGESTED → APPROVED | EDITED → SENT`, with
@@ -118,12 +119,11 @@ system runnable offline for the demo.
 | Language / framework | Java 17, Spring Boot 3.3 | Course stack; mature, well-documented |
 | Persistence | Spring Data JPA, H2 (demo) / PostgreSQL (prod) | Zero-setup demo, real DB for prod |
 | LLM | Anthropic API, with a deterministic mock | Mock = offline demo & tests |
-| Embeddings / RAG | Hashing embedder + cosine search in Java | No external service; shows the pipeline clearly |
+| Embeddings / RAG | OpenAI `text-embedding-3-small` + pgvector HNSW search (hashing embedder + in-Java cosine in the mock profile) | Real semantic search in real mode; zero external deps for offline demo/tests |
 | API docs | springdoc-openapi (Swagger UI) | Interactive demo surface |
 | Packaging | Docker (multi-stage) + docker-compose | One-command run for reviewers |
 
 ## 8. Future Improvements
-- Real embedding model + a vector store (pgvector) behind the same interface.
 - Multi-user accounts and per-user OAuth.
 - Webhook/push (Gmail `watch`) instead of manual fetch.
 - A small web frontend on top of the existing API.
