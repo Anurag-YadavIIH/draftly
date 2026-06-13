@@ -15,4 +15,6 @@ public interface EmailMessageRepository extends JpaRepository<EmailMessage, Long
     List<EmailMessage> findByUserEmailAndUnreadTrueOrderByReceivedAtDesc(String userEmail);
 
     boolean existsByGmailMessageId(String gmailMessageId);
+
+    Optional<EmailMessage> findByIdAndUserEmail(Long id, String userEmail);
 }

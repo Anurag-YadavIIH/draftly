@@ -5,6 +5,7 @@ import com.airtribe.draftly.service.CurrentUser;
 import com.airtribe.draftly.service.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,23 +26,23 @@ public class EmailController {
 
     @Operation(summary = "Fetch recent emails from Gmail and store new ones")
     @PostMapping("/fetch")
-    public List<EmailDto> fetch(@RequestParam(defaultValue = "10") int max) {
-        return emailService.fetchAndStore(CurrentUser.EMAIL, max).stream()
+    public List<EmailDto> fetch(@RequestParam(defaultValue = "10") int max, Authentication authentication) {
+        return emailService.fetchAndStore(CurrentUser.email(authentication), max).stream()
                 .map(EmailDto::from)
                 .toList();
     }
 
     @Operation(summary = "List stored emails (most recent first)")
     @GetMapping
-    public List<EmailDto> list() {
-        return emailService.list(CurrentUser.EMAIL).stream()
+    public List<EmailDto> list(Authentication authentication) {
+        return emailService.list(CurrentUser.email(authentication)).stream()
                 .map(EmailDto::from)
                 .toList();
     }
 
     @Operation(summary = "Get a single email by id")
     @GetMapping("/{id}")
-    public EmailDto get(@PathVariable Long id) {
-        return EmailDto.from(emailService.getById(id));
+    public EmailDto get(@PathVariable Long id, Authentication authentication) {
+        return EmailDto.from(emailService.getOwnedById(CurrentUser.email(authentication), id));
     }
 }

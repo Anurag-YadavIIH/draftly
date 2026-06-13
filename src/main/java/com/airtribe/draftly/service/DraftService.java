@@ -52,7 +52,7 @@ public class DraftService {
 
     @Transactional
     public Draft generate(String userEmail, Long emailId, String requestedTone) {
-        EmailMessage email = emailService.getById(emailId);
+        EmailMessage email = emailService.getOwnedById(userEmail, emailId);
         UserPreference pref = preferenceService.get(userEmail);
 
         String tone = (requestedTone != null && !requestedTone.isBlank())
@@ -82,6 +82,12 @@ public class DraftService {
 
     public Draft getById(Long id) {
         return draftRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Draft not found: " + id));
+    }
+
+    /** Like {@link #getById}, but 404s if the draft belongs to a different user. */
+    public Draft getOwnedById(String userEmail, Long id) {
+        return draftRepository.findByIdAndUserEmail(id, userEmail)
                 .orElseThrow(() -> new NotFoundException("Draft not found: " + id));
     }
 

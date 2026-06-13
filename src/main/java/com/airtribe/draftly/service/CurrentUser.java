@@ -1,12 +1,17 @@
 package com.airtribe.draftly.service;
 
+import org.springframework.security.core.Authentication;
+
 /**
- * For this capstone we operate as a single demo user. In a multi-tenant system
- * this value would come from the authenticated principal (the logged-in user).
+ * Resolves the authenticated user's identity. Every entity in this app is
+ * keyed by {@code userEmail}, and {@link Authentication#getName()} returns
+ * exactly that email (the JWT subject is the user's email).
  */
 public final class CurrentUser {
 
-    public static final String EMAIL = "demo.user@draftly.app";
+    public static String email(Authentication authentication) {
+        return authentication.getName();
+    }
 
     private CurrentUser() {
     }

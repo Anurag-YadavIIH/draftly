@@ -6,6 +6,7 @@ import com.airtribe.draftly.service.CurrentUser;
 import com.airtribe.draftly.service.PreferenceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -25,13 +26,13 @@ public class PreferenceController {
 
     @Operation(summary = "Get current user preferences")
     @GetMapping
-    public PreferenceDto get() {
-        return PreferenceDto.from(preferenceService.get(CurrentUser.EMAIL));
+    public PreferenceDto get(Authentication authentication) {
+        return PreferenceDto.from(preferenceService.get(CurrentUser.email(authentication)));
     }
 
     @Operation(summary = "Create or update user preferences")
     @PutMapping
-    public PreferenceDto update(@RequestBody PreferenceRequest request) {
-        return PreferenceDto.from(preferenceService.upsert(CurrentUser.EMAIL, request));
+    public PreferenceDto update(@RequestBody PreferenceRequest request, Authentication authentication) {
+        return PreferenceDto.from(preferenceService.upsert(CurrentUser.email(authentication), request));
     }
 }

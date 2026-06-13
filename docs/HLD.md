@@ -24,7 +24,6 @@ and AI concepts (**RAG** and **MCP-style tools**).
 - Encrypt OAuth tokens at rest; support logout / token revocation
 
 **Out of scope (intentionally, for a beginner-friendly capstone)**
-- Multi-user accounts / auth UI (the demo uses a single fixed user)
 - A frontend (the API + Swagger UI is the deliverable)
 
 ## 3. Architecture Overview
@@ -96,11 +95,42 @@ system runnable offline for the demo.
 | `user_preference` | signature & default tone | `user_email` (UNIQUE) |
 | `style_sample` | RAG corpus | `text`, `embedding` (CSV), `embedding_vec` (pgvector) |
 | `oauth_token` | Gmail tokens | `access_token_enc`, `refresh_token_enc` (AES-GCM) |
+| `app_user` | login credentials | `email` (UNIQUE), `password_hash` (BCrypt) |
 
 **Draft status lifecycle:** `SUGGESTED → APPROVED | EDITED → SENT`, with
 `REJECTED` and `FAILED` as the other outcomes.
 
-## 6. Reliability, Security & Idempotency
+## 6. Authentication & Authorization
+
+Draftly is multi-tenant: every user has their own inbox, drafts, preferences,
+style corpus and Gmail connection, isolated by `user_email`.
+
+- **Accounts**: `POST /api/auth/register` creates an `app_user` row (email +
+  BCrypt password hash). `POST /api/auth/login` verifies credentials via
+  Spring Security's `DaoAuthenticationProvider` and returns a signed JWT to
+  send as `Authorization: Bearer <token>`.
+- **Stateless sessions**: a `JwtAuthFilter` validates the bearer token on every
+  request and populates the security context with the caller's email — no
+  server-side session state. Every endpoint except `/api/auth/register`,
+  `/api/auth/login`, the Gmail OAuth callback, and Swagger/H2-console requires
+  a valid token.
+- **Per-user data isolation**: every entity (`email_message`, `draft`,
+  `user_preference`, `style_sample`, `oauth_token`) is keyed by `user_email`.
+  Controllers resolve the caller's email from the JWT and scope all
+  queries/writes to it. Fetching another user's draft or email by id returns
+  `404` (not `403`), so existence isn't leaked to non-owners.
+- **Gmail OAuth "state" problem**: Google's OAuth callback
+  (`/api/auth/gmail/callback`) is an unauthenticated browser redirect with no
+  `Authorization` header, so the app can't tell which Draftly user it belongs
+  to from the request alone. `GET /api/auth/gmail/login` solves this by
+  minting a short-lived (10 min), purpose-scoped JWT containing the caller's
+  email and passing it as the OAuth `state` parameter; the callback decodes it
+  to know whose Gmail tokens to store.
+- **Demo account**: `demo.user@draftly.app` / `demo1234` is seeded on first
+  startup so the existing demo flow (preferences + style samples) works out of
+  the box — or register a new account via `/api/auth/register`.
+
+## 7. Reliability, Security & Idempotency
 
 - **Idempotency**: a `UNIQUE` constraint on `sent_log.idempotency_key` plus a
   pre-send check means retrying the same send never produces a duplicate email.
@@ -112,7 +142,7 @@ system runnable offline for the demo.
 - **Quota friendliness**: emails are de-duplicated on fetch so we never reprocess
   the same message.
 
-## 7. Technology Choices
+## 8. Technology Choices
 
 | Concern | Choice | Why |
 |--------|--------|-----|
@@ -120,10 +150,11 @@ system runnable offline for the demo.
 | Persistence | Spring Data JPA, H2 (demo) / PostgreSQL (prod) | Zero-setup demo, real DB for prod |
 | LLM | Anthropic API, with a deterministic mock | Mock = offline demo & tests |
 | Embeddings / RAG | OpenAI `text-embedding-3-small` + pgvector HNSW search (hashing embedder + in-Java cosine in the mock profile) | Real semantic search in real mode; zero external deps for offline demo/tests |
+| Auth | Spring Security + JWT (jjwt), BCrypt password hashing | Stateless, standard, easy to demo via Swagger's "Authorize" button |
 | API docs | springdoc-openapi (Swagger UI) | Interactive demo surface |
 | Packaging | Docker (multi-stage) + docker-compose | One-command run for reviewers |
 
-## 8. Future Improvements
-- Multi-user accounts and per-user OAuth.
+## 9. Future Improvements
+
 - Webhook/push (Gmail `watch`) instead of manual fetch.
 - A small web frontend on top of the existing API.

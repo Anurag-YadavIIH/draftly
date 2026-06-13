@@ -44,6 +44,10 @@ draftly:
   # AES key (Base64, 16/24/32 bytes) for encrypting OAuth tokens at rest.
   # A demo key is provided; OVERRIDE in production via DRAFTLY_ENCRYPTION_KEY.
   encryption-key: ${DRAFTLY_ENCRYPTION_KEY:ZHJhZnRseS1kZW1vLWtleS0xMjM0NTY3OA==}
+  # HMAC secret (Base64) for signing login JWTs and Gmail OAuth state tokens.
+  # A demo key is provided; OVERRIDE in production via DRAFTLY_JWT_SECRET.
+  jwt-secret: ${DRAFTLY_JWT_SECRET:NjxQyuBSl/yBIsYuWTciUZTEta6TJ2H15rijFU4NdVg=}
+  jwt-expiration-minutes: ${DRAFTLY_JWT_EXPIRATION_MINUTES:1440}
   openai:
     api-key: ${OPENAI_API_KEY:}
     model: ${OPENAI_MODEL:gpt-4o-mini}

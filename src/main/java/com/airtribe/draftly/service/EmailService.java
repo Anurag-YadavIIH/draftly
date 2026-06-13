@@ -54,4 +54,10 @@ public class EmailService {
         return emailRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Email not found: " + id));
     }
+
+    /** Like {@link #getById}, but 404s if the email belongs to a different user. */
+    public EmailMessage getOwnedById(String userEmail, Long id) {
+        return emailRepository.findByIdAndUserEmail(id, userEmail)
+                .orElseThrow(() -> new NotFoundException("Email not found: " + id));
+    }
 }

@@ -1,20 +1,23 @@
 package com.airtribe.draftly.config;
 
+import com.airtribe.draftly.domain.User;
 import com.airtribe.draftly.domain.UserPreference;
 import com.airtribe.draftly.repository.StyleSampleRepository;
 import com.airtribe.draftly.repository.UserPreferenceRepository;
-import com.airtribe.draftly.service.CurrentUser;
+import com.airtribe.draftly.repository.UserRepository;
 import com.airtribe.draftly.service.rag.StyleRetriever;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
- * Seeds demo data on first startup so the RAG style-matching and preferences are
- * populated out of the box. Safe to run repeatedly: it only seeds when empty.
+ * Seeds demo data on first startup so login, RAG style-matching and preferences
+ * are all populated out of the box. Safe to run repeatedly: it only seeds when
+ * empty.
  *
  * The style samples below are written in a consistent, warm-but-professional
  * voice. Because draft generation retrieves these as context, generated drafts
@@ -25,13 +28,23 @@ public class DataSeeder implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
 
+    /** Seeded as user #1 - log in with this email and password {@code demo1234}. */
+    private static final String DEMO_EMAIL = "demo.user@draftly.app";
+    private static final String DEMO_PASSWORD = "demo1234";
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     private final UserPreferenceRepository preferenceRepository;
     private final StyleSampleRepository styleSampleRepository;
     private final StyleRetriever styleRetriever;
 
-    public DataSeeder(UserPreferenceRepository preferenceRepository,
+    public DataSeeder(UserRepository userRepository,
+                      PasswordEncoder passwordEncoder,
+                      UserPreferenceRepository preferenceRepository,
                       StyleSampleRepository styleSampleRepository,
                       StyleRetriever styleRetriever) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
         this.preferenceRepository = preferenceRepository;
         this.styleSampleRepository = styleSampleRepository;
         this.styleRetriever = styleRetriever;
@@ -39,23 +52,31 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        seedDemoUser();
         seedPreferences();
         seedStyleSamples();
     }
 
+    private void seedDemoUser() {
+        if (!userRepository.existsByEmail(DEMO_EMAIL)) {
+            userRepository.save(new User(DEMO_EMAIL, passwordEncoder.encode(DEMO_PASSWORD)));
+            log.info("Seeded demo account {} (password: {})", DEMO_EMAIL, DEMO_PASSWORD);
+        }
+    }
+
     private void seedPreferences() {
-        if (preferenceRepository.findByUserEmail(CurrentUser.EMAIL).isEmpty()) {
+        if (preferenceRepository.findByUserEmail(DEMO_EMAIL).isEmpty()) {
             UserPreference pref = new UserPreference(
-                    CurrentUser.EMAIL,
+                    DEMO_EMAIL,
                     "Best regards,\nAlex Morgan\nProduct Team, Draftly",
                     "formal");
             preferenceRepository.save(pref);
-            log.info("Seeded default preferences for {}", CurrentUser.EMAIL);
+            log.info("Seeded default preferences for {}", DEMO_EMAIL);
         }
     }
 
     private void seedStyleSamples() {
-        if (!styleSampleRepository.findByUserEmail(CurrentUser.EMAIL).isEmpty()) {
+        if (!styleSampleRepository.findByUserEmail(DEMO_EMAIL).isEmpty()) {
             return;
         }
         List<String> pastEmails = List.of(
@@ -70,7 +91,7 @@ public class DataSeeder implements CommandLineRunner {
                 "Thank you for the invoice. I can confirm receipt and everything looks correct. "
                         + "Payment will be processed by end of week."
         );
-        pastEmails.forEach(text -> styleRetriever.indexSentEmail(CurrentUser.EMAIL, text));
+        pastEmails.forEach(text -> styleRetriever.indexSentEmail(DEMO_EMAIL, text));
         log.info("Seeded {} style samples for RAG", pastEmails.size());
     }
 }

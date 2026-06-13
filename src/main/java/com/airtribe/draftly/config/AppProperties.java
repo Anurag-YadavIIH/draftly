@@ -19,6 +19,12 @@ public class AppProperties {
     /** AES secret (Base64, 16/24/32 bytes) used to encrypt OAuth tokens at rest. */
     private String encryptionKey = "ZHJhZnRseS1kZW1vLWtleS0xMjM0NTY3OA==";
 
+    /** HMAC secret (Base64) used to sign/verify JWTs (login + OAuth state). */
+    private String jwtSecret = "NjxQyuBSl/yBIsYuWTciUZTEta6TJ2H15rijFU4NdVg=";
+
+    /** How long an issued login JWT remains valid. */
+    private int jwtExpirationMinutes = 1440;
+
     /** How many past sent emails to retrieve as style context for RAG. */
     private int ragTopK = 3;
 
@@ -86,6 +92,10 @@ public class AppProperties {
     public void setLlmProvider(String llmProvider) { this.llmProvider = llmProvider; }
     public String getEncryptionKey() { return encryptionKey; }
     public void setEncryptionKey(String encryptionKey) { this.encryptionKey = encryptionKey; }
+    public String getJwtSecret() { return jwtSecret; }
+    public void setJwtSecret(String jwtSecret) { this.jwtSecret = jwtSecret; }
+    public int getJwtExpirationMinutes() { return jwtExpirationMinutes; }
+    public void setJwtExpirationMinutes(int jwtExpirationMinutes) { this.jwtExpirationMinutes = jwtExpirationMinutes; }
     public int getRagTopK() { return ragTopK; }
     public void setRagTopK(int ragTopK) { this.ragTopK = ragTopK; }
     public String getEmbeddingProvider() { return embeddingProvider; }

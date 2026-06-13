@@ -45,6 +45,9 @@ services:
       # ---- Token encryption (override in production!) ----
       DRAFTLY_ENCRYPTION_KEY: ${DRAFTLY_ENCRYPTION_KEY:-hEOJ0M+xSp8dJydJwP5o5BH+bWJ+BAAXePOvdn1nlxA=}
 
+      # ---- JWT signing secret (override in production!) ----
+      DRAFTLY_JWT_SECRET: ${DRAFTLY_JWT_SECRET:-HC8oH6d4ROfnLFLT98wXIMJDYmPlAkYtjNd2tr8YMTQ=}
+
       # ---- Database (points at the db service below) ----
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/draftly
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-draftly}

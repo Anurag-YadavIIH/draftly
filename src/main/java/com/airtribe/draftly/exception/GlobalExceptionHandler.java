@@ -4,6 +4,7 @@ import com.airtribe.draftly.dto.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -31,6 +32,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(SendFailedException.class)
     public ResponseEntity<ApiError> handleSendFailed(SendFailedException ex, HttpServletRequest req) {
         return build(HttpStatus.BAD_GATEWAY, ex.getMessage(), req);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiError> handleAuthentication(AuthenticationException ex, HttpServletRequest req) {
+        return build(HttpStatus.UNAUTHORIZED, "Invalid email or password", req);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

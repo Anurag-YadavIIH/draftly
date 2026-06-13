@@ -45,7 +45,11 @@ public class RealGmailTool implements GmailTool {
 
     private final TokenService tokenService;
     private final AppProperties props;
-    private final HttpClient http = HttpClient.newHttpClient();
+    // Force HTTP/1.1 - Java's default HTTP/2 ALPN negotiation can fail
+    // against googleapis.com with "Remote host terminated the handshake".
+    private final HttpClient http = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_1_1)
+            .build();
     private final ObjectMapper mapper = new ObjectMapper();
 
     public RealGmailTool(TokenService tokenService, AppProperties props) {
