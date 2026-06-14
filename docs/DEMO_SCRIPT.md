@@ -5,84 +5,141 @@ This is a word-for-word guide for your screen-recording. Recommended tools:
 not a script to read robotically.
 
 **Before you hit record:**
-1. Start the app: `docker compose up --build` (wait for "Started DraftlyApplication").
-2. Open `http://localhost:8080/swagger-ui.html` in your browser.
-3. Have this script on a second screen / phone.
-4. Close noisy apps; do a 10-second test recording to check mic + screen.
+
+1. Start the backend: `docker compose up --build` (wait for "Started DraftlyApplication").
+2. Start the frontend: `cd frontend && npm install && npm run dev`.
+3. Open `http://localhost:5173` in your browser (the React app). Also open
+   `http://localhost:8080/swagger-ui.html` in a second tab for the reliability segment.
+4. Have this script on a second screen / phone.
+5. Close noisy apps; do a 10-second test recording to check mic + screen.
 
 ---
 
-### [0:00–0:30] Intro — what & why
-> "Hi, I'm <your name>. This is **Draftly**, my backend capstone for the
-> Airtribe Backend AI Engineering course. It's a **Gmail AI reply agent**: it
-> reads your inbox, drafts replies in your own writing style using an LLM, lets
-> you review them, and then sends them safely. It's built with **Java and Spring
-> Boot**, and it uses the **RAG** and **MCP** concepts from the course. Let me
-> show the architecture, then a live demo."
+### [0:00–0:25] Intro — what & why
 
-*(Show `docs/architecture.png` on screen for ~10 seconds.)*
+> "Hi, I'm <your name>. This is **Draftly**, my capstone for the Airtribe Backend
+> AI Engineering course — a full-stack **Gmail AI reply agent**. It's a Spring
+> Boot API with a **React frontend**, **multi-user accounts secured with JWT**,
+> and it uses the **RAG** and **MCP** concepts from the course to draft replies
+> in my own writing style. Let me show the architecture, then a live demo."
 
-### [0:30–1:00] Architecture (show the diagram)
-> "It's a clean **layered architecture**. Controllers expose REST APIs, services
-> hold the logic, and below that I have **MCP-style tools** — Gmail and the LLM
-> each sit behind an interface with a mock and a real version. There's a **RAG**
-> component that learns my writing style, a database for drafts and send history,
-> and a scheduler that retries failed sends. By default it runs fully offline in
-> demo mode, so no Google login or API key is needed."
+*(Show `docs/architecture.png` on screen for ~8 seconds.)*
 
-### [1:00–1:30] Fetch the inbox
-*(Switch to Swagger UI.)*
-> "Let me start the workflow. First I fetch the inbox."
+### [0:25–0:50] Architecture (show the diagram)
 
-- Expand **POST `/api/emails/fetch`** → **Try it out** → **Execute**.
-> "These are mock emails seeded for the demo. You can see the sender, subject and
-> body. Notice each has a Gmail message id — I de-duplicate on that so the same
-> email is never processed twice."
+> "It's a layered Spring Boot API behind a stateless **JWT** security filter.
+> Controllers expose REST endpoints, services hold the business logic, and
+> below that are **MCP-style tools** — Gmail and the LLM each sit behind an
+> interface with mock and real implementations. **RAG** retrieves my past sent
+> emails by embedding similarity using **pgvector**, and a retry scheduler
+> handles failed sends. On top of all that is a **React frontend** for the
+> whole review workflow."
 
-### [1:30–2:30] Generate a draft (the AI + RAG part)
-- Expand **POST `/api/drafts`** → **Try it out**.
-- Body: `{ "emailId": 1, "tone": "friendly" }` → **Execute**.
-> "Now the interesting part. I ask Draftly to generate a reply to email one, in a
-> *friendly* tone. Behind the scenes it does **RAG** — it embeds this email,
-> finds the most similar emails I've sent before, and feeds my writing style plus
-> the tone into the LLM. Here's the generated draft, with my signature, and its
-> status is **SUGGESTED**."
+### [0:50–1:25] Log in (the frontend)
 
-*(Optional, if time:)* Run it again with `"tone": "formal"`.
-> "Same email, *formal* tone — and the draft changes accordingly. So tone is
-> controllable."
+*(Switch to the browser at `http://localhost:5173` — the "Sign in to Draftly" page.)*
 
-### [2:30–3:15] Review → approve
-> "Nothing gets sent without my approval. I can edit, reject, or approve."
+> "Every account here is fully isolated — your inbox, drafts, style history and
+> Gmail connection are all your own. I'll log in with the seeded demo account."
 
-- Expand **POST `/api/drafts/{id}/approve`** → id `1` → **Execute**.
-> "I'll approve it. The status is now **APPROVED**, which means it's ready to send."
+- The email field is pre-filled with `demo.user@draftly.app`; type the password
+  `demo1234` → click **Sign in**.
 
-### [3:15–4:15] Send with retry + idempotency (the reliability part)
-- Expand **POST `/api/drafts/{id}/send`** → id `1`, set `simulateFailures` = `2` → **Execute**.
-> "When I send, I'm telling the demo to make the first two attempts fail — like a
-> flaky network or an expired token. You can see it's marked **FAILED** with the
-> attempt count."
-- Wait ~15–30 seconds (the scheduler runs every 15s). Then **GET `/api/drafts/1`**.
+> "That hits `POST /api/auth/login`, which returns a JWT. The frontend stores
+> it and sends it as a Bearer token on every request from here on — and I could
+> just as easily click 'Create one' to register a brand-new account with its
+> own empty inbox."
+
+### [1:25–2:10] Inbox — fetch & generate (RAG + LLM)
+
+*(Land on the Inbox page.)*
+
+> "This is the inbox. I'll fetch new emails — Draftly pulls from Gmail (or a
+> mock inbox in mock mode), de-duplicating by message id so nothing's ever
+> processed twice."
+
+- Click **Fetch new emails**.
+
+> "Now let's generate an AI reply for one of these."
+
+- Click **Generate draft** (the sparkles button) on an email.
+
+> "Behind the scenes, **RAG** embeds this email, finds the most similar emails
+> I've sent before, and feeds my writing style plus my preferred tone — set on
+> the Preferences page — into the LLM, OpenAI by default. That takes us
+> straight to the draft."
+
+### [2:10–2:50] Review the draft
+
+*(Land on the draft detail page.)*
+
+> "Here's the original email alongside the generated reply, tagged with its
+> tone, with my signature already appended. Nothing gets sent without my
+> approval — I can edit this text directly, save changes, or reject it. I'll
+> approve it."
+
+- Click **Approve**.
+
+> "The status is now **APPROVED**, which makes it sendable."
+
+### [2:50–3:15] Send via Gmail
+
+- Click **Send via Gmail** → confirm the dialog.
+
+> "Sending calls `POST /api/drafts/{id}/send`, which preserves the email
+> thread via `In-Reply-To` and `threadId` — and the result comes right back as
+> **SENT**."
+
+### [3:15–4:15] Reliability: retry + idempotency
+
+*(Switch to Swagger UI at `http://localhost:8080/swagger-ui.html` — this is a
+demo-only failure switch the frontend doesn't expose.)*
+
+> "One thing the UI doesn't expose is a demo-only failure simulator, so let me
+> switch to Swagger to show the reliability story. I'll log in here too to get
+> a token for the 'Authorize' button."
+
+- `POST /api/auth/login` with the demo credentials → copy the `token` from the
+  response → click **Authorize** → paste `Bearer <token>`.
+- Generate and approve another draft the same way as before, then:
+- `POST /api/drafts/{id}/send` with `simulateFailures` = `2` → **Execute**.
+
+> "This tells Draftly to fail the first two send attempts — like a flaky
+> network or an expired token. It comes back **FAILED** with an attempt count."
+
+- Wait ~15–30 seconds (the scheduler runs every 15s), then **GET `/api/drafts/{id}`**.
+
 > "A background **retry scheduler** automatically retries failed sends. After a
-> couple of retries it succeeds — the status is now **SENT**."
-- Run **POST `/api/drafts/1/send`** again (no failures).
-> "And if I try to send the same draft again, it's **idempotent** — it returns
-> the original result and does *not* send a duplicate email. That's enforced by a
-> unique idempotency key in the database."
+> couple of retries it's now **SENT**."
+
+- Run `POST /api/drafts/{id}/send` again, with no params.
+
+> "And sending the same draft again is **idempotent** — it returns the original
+> result and does *not* send a duplicate email, enforced by a unique idempotency
+> key in the database."
 
 ### [4:15–4:45] Wrap up
-> "To recap: Draftly fetches email, generates style-aware AI drafts with RAG,
-> keeps a human in the loop for review, and sends reliably with idempotency and
-> retries. Tokens are encrypted at rest, and the whole thing is Dockerized — one
-> command to run. The code, README and design docs are in the GitHub repo linked
-> below. Thanks for watching!"
+
+> "To recap: Draftly is a full-stack, multi-user AI reply agent — a React
+> frontend, JWT auth with BCrypt passwords and AES-encrypted Gmail tokens,
+> RAG-powered style-aware drafts, human-in-the-loop review, and reliable,
+> idempotent sending with automatic retries. Everything's Dockerized — one
+> command to run. The code, README and design docs are in the GitHub repo
+> linked below. Thanks for watching!"
 
 ---
 
 ### Tips
-- **Keep it under 5 minutes** — practice once first; trim the second-tone demo if tight.
-- If you don't want to wait for the scheduler on camera, you can send with
-  `simulateFailures=0` for a clean instant success, and just *explain* the retry.
-- Record at 1080p; make the browser font larger (Ctrl/Cmd +) so text is readable.
-- Show your face in a small corner (Loom does this automatically) — it's friendlier.
+
+- **Keep it under 5 minutes** — practice once first; the Swagger reliability
+  segment is the easiest to trim or speed up.
+- If you don't want to wait for the scheduler on camera, send with
+  `simulateFailures=0` for an instant success and just *describe* the retry
+  behaviour.
+- To get a token into Swagger quickly: log in via `POST /api/auth/login` there
+  too (same demo credentials), copy the `token` field, and paste
+  `Bearer <token>` into the green **Authorize** button.
+- Record at 1080p; zoom in the browser (Ctrl/Cmd +) so text — especially the
+  JWT/token fields — is readable.
+- Show your face in a small corner (Loom does this automatically) — it's
+  friendlier.
