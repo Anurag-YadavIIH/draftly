@@ -37,6 +37,9 @@ public class AppProperties {
     /** Maximum automatic retry attempts for a failed send. */
     private int maxSendRetries = 3;
 
+    /** Comma-separated origins allowed to call the API from a browser (the frontend's dev/prod URLs). */
+    private String corsAllowedOrigins = "http://localhost:5173";
+
     private final Anthropic anthropic = new Anthropic();
     private final OpenAi openai = new OpenAi();
     private final Gmail gmail = new Gmail();
@@ -104,6 +107,8 @@ public class AppProperties {
     public void setVectorStore(String vectorStore) { this.vectorStore = vectorStore; }
     public int getMaxSendRetries() { return maxSendRetries; }
     public void setMaxSendRetries(int maxSendRetries) { this.maxSendRetries = maxSendRetries; }
+    public String getCorsAllowedOrigins() { return corsAllowedOrigins; }
+    public void setCorsAllowedOrigins(String corsAllowedOrigins) { this.corsAllowedOrigins = corsAllowedOrigins; }
     public Anthropic getAnthropic() { return anthropic; }
     public OpenAi getOpenai() { return openai; }
     public Gmail getGmail() { return gmail; }

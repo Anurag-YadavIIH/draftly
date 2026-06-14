@@ -148,7 +148,7 @@ style corpus and Gmail connection, isolated by `user_email`.
 |--------|--------|-----|
 | Language / framework | Java 17, Spring Boot 3.3 | Course stack; mature, well-documented |
 | Persistence | Spring Data JPA, H2 (demo) / PostgreSQL (prod) | Zero-setup demo, real DB for prod |
-| LLM | Anthropic API, with a deterministic mock | Mock = offline demo & tests |
+| LLM | OpenAI API (default), Anthropic API, or a deterministic mock | Mock = offline demo & tests |
 | Embeddings / RAG | OpenAI `text-embedding-3-small` + pgvector HNSW search (hashing embedder + in-Java cosine in the mock profile) | Real semantic search in real mode; zero external deps for offline demo/tests |
 | Auth | Spring Security + JWT (jjwt), BCrypt password hashing | Stateless, standard, easy to demo via Swagger's "Authorize" button |
 | API docs | springdoc-openapi (Swagger UI) | Interactive demo surface |
@@ -157,4 +157,4 @@ style corpus and Gmail connection, isolated by `user_email`.
 ## 9. Future Improvements
 
 - Webhook/push (Gmail `watch`) instead of manual fetch.
-- A small web frontend on top of the existing API.
+- Containerize the React frontend alongside the API in docker-compose.

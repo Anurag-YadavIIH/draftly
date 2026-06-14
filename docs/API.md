@@ -3,8 +3,11 @@
 Base URL: `http://localhost:8080`
 Interactive docs (recommended): **`/swagger-ui.html`**
 
-All endpoints operate as a single demo user (`demo.user@draftly.app`), so no
-auth header is needed in demo mode.
+Every endpoint below except `POST /api/auth/register`, `POST /api/auth/login`,
+and `GET /api/auth/gmail/callback` requires `Authorization: Bearer <token>`,
+obtained from `/api/auth/login` (or `/register`). A demo account is seeded on
+first startup: `demo.user@draftly.app` / `demo1234`. See the
+[`AuthController`](#auth--apiauth) section below for the auth endpoints.
 
 ---
 
@@ -73,17 +76,20 @@ curl -X POST "http://localhost:8080/api/drafts/1/send"
 
 ---
 
-## Auth (Gmail OAuth2) — `/api/auth`
+## Auth — `/api/auth`
 
-> Only needed in **real** mode (`draftly.gmail-mode=real`). In demo mode the
-> inbox is mocked and no Google account is required.
+| Method | Path | Auth required | Description | Body / Params |
+|--------|------|---------------|-------------|---------------|
+| POST | `/api/auth/register` | no | Create an account | `{ "email": "...", "password": "..." }` → `{ "token", "email" }` |
+| POST | `/api/auth/login` | no | Log in | `{ "email": "...", "password": "..." }` → `{ "token", "email" }` |
+| GET | `/api/auth/gmail/login` | yes | Returns a Google consent URL (with a signed `state` identifying you) | — |
+| GET | `/api/auth/gmail/callback` | no (browser redirect) | OAuth redirect target; exchanges `code` for tokens using `state` to identify the user | `code`, `state` (query) |
+| GET | `/api/auth/status` | yes | Reports mode + whether **your** Gmail is connected | — |
+| POST | `/api/auth/logout` | yes | Revoke and delete your stored Gmail tokens | — |
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/auth/gmail/login` | Returns the Google consent URL |
-| GET | `/api/auth/gmail/callback` | OAuth redirect target; exchanges `code` for tokens |
-| GET | `/api/auth/status` | Reports mode + whether Gmail is connected |
-| POST | `/api/auth/logout` | Revoke and delete stored tokens |
+> Gmail connect/status/logout are only meaningful in **real** mode
+> (`draftly.gmail-mode=real`). In the mock profile the inbox is mocked and no
+> Google account is required.
 
 ---
 

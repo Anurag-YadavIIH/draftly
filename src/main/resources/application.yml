@@ -48,6 +48,8 @@ draftly:
   # A demo key is provided; OVERRIDE in production via DRAFTLY_JWT_SECRET.
   jwt-secret: ${DRAFTLY_JWT_SECRET:NjxQyuBSl/yBIsYuWTciUZTEta6TJ2H15rijFU4NdVg=}
   jwt-expiration-minutes: ${DRAFTLY_JWT_EXPIRATION_MINUTES:1440}
+  # Comma-separated origins allowed to call the API from a browser (the frontend's dev/prod URLs).
+  cors-allowed-origins: ${DRAFTLY_CORS_ALLOWED_ORIGINS:http://localhost:5173}
   openai:
     api-key: ${OPENAI_API_KEY:}
     model: ${OPENAI_MODEL:gpt-4o-mini}

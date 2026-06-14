@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 760" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 840" font-family="Segoe UI, Helvetica, Arial, sans-serif">
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
       <path d="M0,0 L8,3 L0,6 Z" fill="#5b6b7b"/>
@@ -14,137 +14,171 @@
     </style>
   </defs>
 
-  <rect x="0" y="0" width="1080" height="760" fill="#f7f9fb"/>
+  <rect x="0" y="0" width="1080" height="840" fill="#f7f9fb"/>
   <text x="40" y="46" class="title">Draftly — Gmail AI Reply Agent (HLD)</text>
-  <text x="40" y="70" class="sub">Spring Boot · layered architecture · MCP-style tools · RAG style-learning · idempotent send with retry</text>
+  <text x="40" y="70" class="sub">Spring Boot + React · multi-user JWT auth · MCP-style tools · RAG with OpenAI embeddings + pgvector · idempotent send with retry</text>
 
   <!-- CLIENT -->
-  <text x="40" y="108" class="layer">CLIENT</text>
-  <rect x="40" y="116" width="240" height="58" rx="10" fill="#e8f0fe" stroke="#9bb8f0"/>
-  <text x="60" y="143" class="box">Reviewer / Demo</text>
-  <text x="60" y="161" class="small">Swagger UI · curl · Postman</text>
+  <text x="40" y="104" class="layer">CLIENT</text>
+  <g>
+    <rect x="40" y="112" width="340" height="70" rx="10" fill="#e8f0fe" stroke="#9bb8f0"/>
+    <text x="60" y="136" class="box">React Frontend</text>
+    <text x="60" y="154" class="small">Vite + TypeScript + Tailwind CSS v4</text>
+    <text x="60" y="170" class="small">Login/Register · Inbox · Drafts · Preferences</text>
+
+    <rect x="400" y="112" width="260" height="70" rx="10" fill="#e8f0fe" stroke="#9bb8f0"/>
+    <text x="420" y="136" class="box">Swagger UI / curl / Postman</text>
+    <text x="420" y="154" class="small">API exploration &amp; demo</text>
+    <text x="420" y="170" class="small">localhost:8080/swagger-ui.html</text>
+  </g>
+
+  <!-- SECURITY -->
+  <text x="40" y="206" class="layer">SECURITY  (Spring Security + JWT)</text>
+  <rect x="40" y="214" width="1000" height="62" rx="10" fill="#fef6e0" stroke="#f0d68a"/>
+  <text x="60" y="238" class="box">Stateless JWT Filter Chain</text>
+  <text x="60" y="256" class="small">JwtAuthFilter validates Authorization: Bearer &lt;token&gt; → SecurityContext (ROLE_USER) · CORS for browser origins</text>
+  <text x="60" y="272" class="small">Public endpoints: POST /api/auth/register, /api/auth/login, GET /api/auth/gmail/callback, /swagger-ui/**, /h2-console/**</text>
 
   <!-- CONTROLLER LAYER -->
-  <text x="40" y="210" class="layer">REST CONTROLLERS  (/api)</text>
+  <text x="40" y="300" class="layer">REST CONTROLLERS  (/api)</text>
   <g>
-    <rect x="40" y="220" width="170" height="50" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
-    <text x="55" y="242" class="box">EmailController</text>
-    <text x="55" y="259" class="small">/api/emails</text>
+    <rect x="40" y="308" width="240" height="64" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
+    <text x="55" y="332" class="box">AuthController</text>
+    <text x="55" y="350" class="small">/api/auth</text>
+    <text x="55" y="365" class="small">register · login · gmail oauth</text>
 
-    <rect x="225" y="220" width="170" height="50" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
-    <text x="240" y="242" class="box">DraftController</text>
-    <text x="240" y="259" class="small">/api/drafts</text>
+    <rect x="300" y="308" width="180" height="64" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
+    <text x="315" y="332" class="box">EmailController</text>
+    <text x="315" y="350" class="small">/api/emails</text>
+    <text x="315" y="365" class="small">fetch · list · get</text>
 
-    <rect x="410" y="220" width="190" height="50" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
-    <text x="425" y="242" class="box">PreferenceController</text>
-    <text x="425" y="259" class="small">/api/preferences</text>
+    <rect x="500" y="308" width="180" height="64" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
+    <text x="515" y="332" class="box">DraftController</text>
+    <text x="515" y="350" class="small">/api/drafts</text>
+    <text x="515" y="365" class="small">generate · review · send</text>
 
-    <rect x="615" y="220" width="170" height="50" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
-    <text x="630" y="242" class="box">AuthController</text>
-    <text x="630" y="259" class="small">/api/auth (OAuth2)</text>
+    <rect x="700" y="308" width="220" height="64" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
+    <text x="715" y="332" class="box">PreferenceController</text>
+    <text x="715" y="350" class="small">/api/preferences</text>
+    <text x="715" y="365" class="small">tone · signature</text>
   </g>
 
   <!-- SERVICE LAYER -->
-  <text x="40" y="312" class="layer">SERVICE / DOMAIN LOGIC</text>
+  <text x="40" y="396" class="layer">SERVICE / DOMAIN LOGIC</text>
   <g>
-    <rect x="40" y="322" width="150" height="64" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
-    <text x="55" y="346" class="box">EmailService</text>
-    <text x="55" y="365" class="small">fetch · dedupe ·</text>
-    <text x="55" y="379" class="small">store</text>
+    <rect x="40" y="404" width="150" height="76" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
+    <text x="55" y="428" class="box">EmailService</text>
+    <text x="55" y="447" class="small">fetch · dedupe ·</text>
+    <text x="55" y="461" class="small">store · ownership</text>
 
-    <rect x="205" y="322" width="160" height="64" rx="10" fill="#fff4e5" stroke="#f0c690"/>
-    <text x="220" y="346" class="box">DraftService</text>
-    <text x="220" y="365" class="small">generate (RAG+LLM)</text>
-    <text x="220" y="379" class="small">approve/edit/reject</text>
+    <rect x="205" y="404" width="160" height="76" rx="10" fill="#fff4e5" stroke="#f0c690"/>
+    <text x="220" y="428" class="box">DraftService</text>
+    <text x="220" y="447" class="small">generate (RAG+LLM)</text>
+    <text x="220" y="461" class="small">approve/edit/reject</text>
 
-    <rect x="380" y="322" width="160" height="64" rx="10" fill="#fde8e8" stroke="#f0a0a0"/>
-    <text x="395" y="346" class="box">SendService</text>
-    <text x="395" y="365" class="small">idempotent send</text>
-    <text x="395" y="379" class="small">retry · notify</text>
+    <rect x="380" y="404" width="160" height="76" rx="10" fill="#fde8e8" stroke="#f0a0a0"/>
+    <text x="395" y="428" class="box">SendService</text>
+    <text x="395" y="447" class="small">idempotent send</text>
+    <text x="395" y="461" class="small">retry · notify</text>
 
-    <rect x="555" y="322" width="150" height="64" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
-    <text x="570" y="346" class="box">Preference</text>
-    <text x="570" y="365" class="small">signature ·</text>
-    <text x="570" y="379" class="small">default tone</text>
+    <rect x="555" y="404" width="140" height="76" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
+    <text x="570" y="428" class="box">Preference</text>
+    <text x="570" y="447" class="small">signature ·</text>
+    <text x="570" y="461" class="small">default tone</text>
 
-    <rect x="720" y="322" width="150" height="64" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
-    <text x="735" y="346" class="box">Notification</text>
-    <text x="735" y="365" class="small">alert on</text>
-    <text x="735" y="379" class="small">persistent fail</text>
+    <rect x="710" y="404" width="150" height="76" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
+    <text x="725" y="428" class="box">Notification</text>
+    <text x="725" y="447" class="small">alert on</text>
+    <text x="725" y="461" class="small">persistent fail</text>
+
+    <rect x="875" y="404" width="165" height="76" rx="10" fill="#eef7ee" stroke="#a8d3a8"/>
+    <text x="890" y="428" class="box">Retry Scheduler</text>
+    <text x="890" y="447" class="small">@Scheduled 15s</text>
+    <text x="890" y="461" class="small">max-send-retries</text>
   </g>
 
-  <!-- SCHEDULER -->
-  <rect x="900" y="322" width="140" height="64" rx="10" fill="#eef7ee" stroke="#a8d3a8"/>
-  <text x="915" y="346" class="box">Retry</text>
-  <text x="915" y="362" class="box">Scheduler</text>
-  <text x="915" y="379" class="small">@Scheduled 15s</text>
-
   <!-- INTEGRATION / TOOLS LAYER -->
-  <text x="40" y="430" class="layer">INTEGRATION — MCP-STYLE TOOLS &amp; RAG  (interface + mock/real impl)</text>
+  <text x="40" y="504" class="layer">INTEGRATION — MCP-STYLE TOOLS &amp; RAG  (interface + mock/real impl)</text>
   <g>
-    <rect x="40" y="440" width="220" height="78" rx="10" fill="#eef2ff" stroke="#b9c6f0"/>
-    <text x="55" y="463" class="box">GmailTool</text>
-    <text x="55" y="482" class="small">fetchRecent · sendReply</text>
-    <text x="55" y="499" class="small">MockGmailTool (default)</text>
-    <text x="55" y="513" class="small">RealGmailTool (real API)</text>
+    <rect x="40" y="512" width="220" height="94" rx="10" fill="#eef2ff" stroke="#b9c6f0"/>
+    <text x="55" y="536" class="box">GmailTool</text>
+    <text x="55" y="555" class="small">fetchRecent · sendReply</text>
+    <text x="55" y="572" class="small">MockGmailTool (mock profile)</text>
+    <text x="55" y="587" class="small">RealGmailTool — Gmail API v1</text>
 
-    <rect x="280" y="440" width="220" height="78" rx="10" fill="#eef2ff" stroke="#b9c6f0"/>
-    <text x="295" y="463" class="box">LlmClient</text>
-    <text x="295" y="482" class="small">generateReply(context)</text>
-    <text x="295" y="499" class="small">MockLlmClient (default)</text>
-    <text x="295" y="513" class="small">AnthropicLlmClient</text>
+    <rect x="280" y="512" width="220" height="94" rx="10" fill="#eef2ff" stroke="#b9c6f0"/>
+    <text x="295" y="536" class="box">LlmClient</text>
+    <text x="295" y="555" class="small">generateReply(context)</text>
+    <text x="295" y="572" class="small">OpenAiLlmClient (default)</text>
+    <text x="295" y="587" class="small">Anthropic · Mock variants</text>
 
-    <rect x="520" y="440" width="250" height="78" rx="10" fill="#eef2ff" stroke="#b9c6f0"/>
-    <text x="535" y="463" class="box">RAG — StyleRetriever</text>
-    <text x="535" y="482" class="small">EmbeddingClient (hashing)</text>
-    <text x="535" y="499" class="small">cosine top-K retrieval</text>
-    <text x="535" y="513" class="small">indexes sent replies (learning)</text>
+    <rect x="520" y="512" width="250" height="94" rx="10" fill="#eef2ff" stroke="#b9c6f0"/>
+    <text x="535" y="536" class="box">RAG — StyleRetriever</text>
+    <text x="535" y="555" class="small">OpenAI text-embedding-3-small</text>
+    <text x="535" y="572" class="small">pgvector HNSW cosine search</text>
+    <text x="535" y="587" class="small">in-memory cosine (mock profile)</text>
 
-    <rect x="790" y="440" width="250" height="78" rx="10" fill="#eef2ff" stroke="#b9c6f0"/>
-    <text x="805" y="463" class="box">Auth — TokenService</text>
-    <text x="805" y="482" class="small">EncryptionService (AES-GCM)</text>
-    <text x="805" y="499" class="small">store · auto-refresh · revoke</text>
-    <text x="805" y="513" class="small">tokens encrypted at rest</text>
+    <rect x="790" y="512" width="250" height="94" rx="10" fill="#eef2ff" stroke="#b9c6f0"/>
+    <text x="805" y="536" class="box">Auth — TokenService</text>
+    <text x="805" y="555" class="small">EncryptionService (AES-GCM)</text>
+    <text x="805" y="572" class="small">JwtService (auth + oauth-state)</text>
+    <text x="805" y="587" class="small">store · auto-refresh · revoke</text>
   </g>
 
   <!-- PERSISTENCE -->
-  <text x="40" y="566" class="layer">PERSISTENCE  (Spring Data JPA)</text>
-  <rect x="40" y="576" width="640" height="92" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
-  <text x="55" y="599" class="box">Database — H2 (demo) / PostgreSQL (prod)</text>
-  <text x="55" y="621" class="small">email_message · draft · sent_log (idempotency_key UNIQUE) · user_preference</text>
-  <text x="55" y="639" class="small">style_sample (text + embedding CSV) · oauth_token (encrypted)</text>
-  <text x="55" y="659" class="small">6 repositories · status lifecycle: SUGGESTED→APPROVED/EDITED→SENT / REJECTED / FAILED</text>
+  <text x="40" y="630" class="layer">PERSISTENCE  (Spring Data JPA)</text>
+  <rect x="40" y="638" width="700" height="112" rx="10" fill="#ffffff" stroke="#cdd7e1"/>
+  <text x="55" y="662" class="box">PostgreSQL (default) · H2 in-memory (mock profile)</text>
+  <text x="55" y="684" class="small">app_user · email_message · draft · sent_log (idempotency_key UNIQUE)</text>
+  <text x="55" y="702" class="small">user_preference · style_sample (vector(1536), pgvector) · oauth_token (encrypted)</text>
+  <text x="55" y="720" class="small">7 repositories · status lifecycle: SUGGESTED → APPROVED/EDITED → SENT / REJECTED / FAILED</text>
+  <text x="55" y="738" class="small">multi-tenant: every row scoped by user_email, 404 on cross-user access</text>
 
   <!-- EXTERNAL -->
-  <text x="720" y="566" class="layer">EXTERNAL APIs</text>
-  <rect x="720" y="576" width="320" height="42" rx="10" fill="#f3e8ff" stroke="#cda8f0"/>
-  <text x="735" y="602" class="box">Gmail API  ·  Google OAuth2</text>
-  <rect x="720" y="626" width="320" height="42" rx="10" fill="#f3e8ff" stroke="#cda8f0"/>
-  <text x="735" y="652" class="box">Anthropic Messages API</text>
+  <text x="760" y="630" class="layer">EXTERNAL APIs</text>
+  <rect x="760" y="638" width="280" height="34" rx="8" fill="#f3e8ff" stroke="#cda8f0"/>
+  <text x="775" y="660" class="box">Gmail API · Google OAuth2</text>
+  <rect x="760" y="677" width="280" height="34" rx="8" fill="#f3e8ff" stroke="#cda8f0"/>
+  <text x="775" y="699" class="box">OpenAI API — chat + embeddings</text>
+  <rect x="760" y="716" width="280" height="34" rx="8" fill="#f3e8ff" stroke="#cda8f0"/>
+  <text x="775" y="738" class="box">Anthropic API (optional)</text>
 
   <!-- EDGES -->
-  <path class="edge" d="M160,174 L160,218"/>
-  <path class="edge" d="M125,270 L115,320"/>
-  <path class="edge" d="M310,270 L285,320"/>
-  <path class="edge" d="M505,270 L630,320"/>
-  <path class="edge" d="M700,270 L795,440"/>
+  <!-- clients -> security -->
+  <path class="edge" d="M210,182 L210,212"/>
+  <path class="edge" d="M530,182 L530,212"/>
 
-  <!-- service -> tools -->
-  <path class="edge" d="M115,386 L130,438"/>
-  <path class="edge" d="M285,386 L320,438"/>
-  <path class="edge" d="M300,386 L600,438"/>
-  <path class="edge" d="M460,386 L150,438"/>
-  <path class="edge" d="M900,354 L470,386"/>
+  <!-- security -> controllers -->
+  <path class="edge" d="M160,276 L160,306"/>
+  <path class="edge" d="M390,276 L390,306"/>
+  <path class="edge" d="M590,276 L590,306"/>
+  <path class="edge" d="M810,276 L810,306"/>
 
-  <!-- tools -> external -->
-  <path class="edged" d="M150,518 C150,560 600,560 760,574"/>
-  <path class="edged" d="M390,518 C390,560 700,600 718,640"/>
-  <path class="edged" d="M900,518 L900,574"/>
+  <!-- controllers -> services (AuthController bypasses to TokenService) -->
+  <path class="edge" d="M270,372 C450,430 700,470 900,510"/>
+  <path class="edge" d="M390,372 L115,402"/>
+  <path class="edge" d="M590,372 L285,402"/>
+  <path class="edge" d="M810,372 L625,402"/>
 
-  <!-- services -> db -->
-  <path class="edge" d="M110,386 L300,574"/>
-  <path class="edge" d="M620,470 L500,574"/>
+  <!-- services -> tools -->
+  <path class="edge" d="M115,480 L150,510"/>
+  <path class="edge" d="M285,480 L390,510"/>
+  <path class="edge" d="M310,480 L630,510"/>
+  <path class="edge" d="M460,480 L165,510"/>
+  <path class="edge" d="M875,430 L535,404"/>
 
-  <text x="40" y="712" class="small">Default DEMO MODE = MockGmailTool + MockLlmClient + H2 + hashing embeddings → runs with no Google account and no API key.</text>
-  <text x="40" y="731" class="small">Swap to real services by setting draftly.gmail-mode=real and draftly.llm-provider=anthropic (dashed lines = external calls).</text>
+  <!-- tools -> external (dashed) -->
+  <path class="edged" d="M150,606 C150,650 700,650 758,655"/>
+  <path class="edged" d="M390,606 C390,660 700,690 758,694"/>
+  <path class="edged" d="M630,606 C630,660 700,690 758,694"/>
+  <path class="edged" d="M420,606 C420,670 700,720 758,733"/>
+
+  <!-- tools/services -> persistence -->
+  <path class="edge" d="M115,480 L300,636"/>
+  <path class="edge" d="M645,606 L500,636"/>
+  <path class="edge" d="M915,606 L600,636"/>
+
+  <text x="40" y="786" class="small">Default REAL MODE: real Gmail OAuth2 (HTTP/1.1 forced for the token exchange) + OpenAI (gpt-4o-mini, text-embedding-3-small) + PostgreSQL/pgvector.</text>
+  <text x="40" y="806" class="small">Zero-setup MOCK profile: MockGmailTool + MockLlmClient + in-memory H2 + in-memory cosine embeddings — no Google account or API keys needed.</text>
+  <text x="40" y="826" class="small">Every request (except register/login/gmail-callback) requires Authorization: Bearer &lt;JWT&gt;; dashed lines = external network calls.</text>
 </svg>
